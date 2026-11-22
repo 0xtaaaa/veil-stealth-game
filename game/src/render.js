@@ -40,11 +40,20 @@ const PALETTE = {
 };
 
 const CONE_COLOR = {
-  patrol: 'rgba(242, 201, 76, 0.14)',
-  suspicious: 'rgba(242, 169, 59, 0.22)',
-  alert: 'rgba(229, 83, 75, 0.26)',
-  search: 'rgba(242, 169, 59, 0.18)',
-  return: 'rgba(242, 201, 76, 0.14)',
+  patrol: 'rgba(242, 201, 76, 0.30)',
+  suspicious: 'rgba(242, 169, 59, 0.38)',
+  alert: 'rgba(229, 83, 75, 0.45)',
+  search: 'rgba(242, 169, 59, 0.34)',
+  return: 'rgba(242, 201, 76, 0.30)',
+};
+
+// The cone's rim: a bright edge so the sweep reads even at a glance.
+const CONE_EDGE = {
+  patrol: 'rgba(242, 201, 76, 0.55)',
+  suspicious: 'rgba(242, 169, 59, 0.65)',
+  alert: 'rgba(229, 83, 75, 0.75)',
+  search: 'rgba(242, 169, 59, 0.60)',
+  return: 'rgba(242, 201, 76, 0.55)',
 };
 
 const GUARD_COLOR = {
@@ -189,6 +198,30 @@ export function createRenderer(canvas) {
     }
   }
 
+  function drawPatrolRoutes(game) {
+    // Dotted patrol routes: the guard's walk, readable before it happens,
+    // so a level teaches its own timing at a glance.
+    for (const guard of game.guards) {
+      const pts = guard.waypoints;
+      if (!pts || pts.length < 2) continue;
+      ctx.strokeStyle = 'rgba(238, 241, 245, 0.30)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([2, 7]);
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(238, 241, 245, 0.45)';
+      for (const p of pts) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
   function drawCones(game) {
     for (const guard of game.guards) {
       const poly = guard.conePolygon(game);
@@ -198,6 +231,9 @@ export function createRenderer(canvas) {
       ctx.closePath();
       ctx.fillStyle = CONE_COLOR[guard.state] || CONE_COLOR.patrol;
       ctx.fill();
+      ctx.strokeStyle = CONE_EDGE[guard.state] || CONE_EDGE.patrol;
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
   }
 
@@ -207,6 +243,10 @@ export function createRenderer(canvas) {
       ctx.beginPath();
       ctx.arc(guard.x, guard.y, 12, 0, Math.PI * 2);
       ctx.fill();
+      // Pale rim so a guard reads against any floor, lit or dark.
+      ctx.strokeStyle = 'rgba(238, 241, 245, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
       ctx.fillStyle = PALETTE.guardDark;
       ctx.beginPath();
       ctx.arc(guard.x, guard.y, 5, 0, Math.PI * 2);
@@ -250,6 +290,9 @@ export function createRenderer(canvas) {
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(238, 241, 245, 0.85)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(p.x + Math.cos(p.facing) * (r + 5), p.y + Math.sin(p.facing) * (r + 5));
     ctx.lineTo(p.x + Math.cos(p.facing + 2.5) * r, p.y + Math.sin(p.facing + 2.5) * r);
@@ -452,6 +495,7 @@ export function createRenderer(canvas) {
       ctx.translate(0, HUD_H);
       drawFloor(game.level);
       drawCover(game.level);
+      drawPatrolRoutes(game);
       drawCones(game);
       drawLootExitPanels(game);
       drawGuards(game);
@@ -490,6 +534,7 @@ export function createRenderer(canvas) {
     ctx.translate(0, HUD_H);
     drawFloor(game.level);
     drawCover(game.level);
+    drawPatrolRoutes(game);
     drawCones(game);
     drawLootExitPanels(game);
     drawGuards(game);

@@ -10,7 +10,7 @@
 //   chase   — a near miss: a red cone, the meter nearly full, a guard closing in
 //   mission — the Rooftop level, every relic taken, Wren at the open exit
 
-import { STATE_ALERT, STATE_PATROL } from './guards.js';
+import { STATE_ALERT, STATE_PATROL, STATE_SUSPICIOUS } from './guards.js';
 import { tileCenterX, tileCenterY } from './level.js';
 
 function placeGuard(game, index, cx, cy, facing) {
@@ -43,7 +43,7 @@ export function stageShot(name, game) {
     for (const item of game.level.loot) item.taken = true;
     game.score = 2450;
     game.levelTime = 187;
-    placePlayer(game, 35, 18, 0, false);
+    placePlayer(game, 34, 18, 0, false);
     placeGuard(game, 0, 20, 2, Math.PI / 2);
     placeGuard(game, 1, 12, 10, 0);
     placeGuard(game, 2, 8, 8, Math.PI / 4);
@@ -58,11 +58,13 @@ export function stageShot(name, game) {
     game.levelTime = 64;
     game.strikes = 3;
     placePlayer(game, 20, 12, Math.PI, false);
-    const guard = placeGuard(game, 0, 17, 12, 0);
+    const guard = placeGuard(game, 0, 18, 12, 0);
     guard.state = STATE_ALERT;
-    guard.meter = 0.85;
+    guard.meter = 0.88;
     guard.lastSeen = { x: game.player.x, y: game.player.y };
-    placeGuard(game, 1, 33, 6, Math.PI / 2);
+    const guard2 = placeGuard(game, 1, 24, 9, 2.5);
+    guard2.state = STATE_SUSPICIOUS;
+    guard2.meter = 0.5;
     game.alarm = 1;
     game.ghost = false;
     return 'play';
@@ -75,9 +77,12 @@ export function stageShot(name, game) {
     game.strikes = 3;
     game.level.loot[0].taken = true;
     game.player.coins = 2;
+    game.coinMarks = [{ x: tileCenterX(12), y: tileCenterY(3) }];
     placePlayer(game, 8, 1, Math.PI / 2, true);
     placeGuard(game, 0, 14, 7, 0);
-    placeGuard(game, 1, 30, 10, -Math.PI / 2);
+    const guard2 = placeGuard(game, 1, 30, 10, -Math.PI / 2);
+    guard2.state = STATE_SUSPICIOUS;
+    guard2.meter = 0.45;
     game.alarm = 0;
     return 'play';
   }
